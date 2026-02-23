@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, MoreVertical, Send } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -132,7 +133,6 @@ export function ChatView({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ blockedProfileId: otherProfile.id }),
     })
-    // Also unmatch
     await fetch('/api/unmatch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -153,12 +153,12 @@ export function ChatView({
   return (
     <div className="fixed inset-0 flex flex-col bg-background z-10">
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
-        <Link href="/matches" className="text-muted-foreground hover:text-foreground p-1 -ml-1">
+      <header className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0 bg-background/95 backdrop-blur-sm">
+        <Link href="/matches" className="text-muted-foreground hover:text-foreground p-1 -ml-1 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <Link href={`/profile/${otherProfile.id}`} className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-9 h-9 rounded-full overflow-hidden bg-muted shrink-0">
+          <div className="w-9 h-9 rounded-full overflow-hidden bg-muted shrink-0 ring-2 ring-border">
             {otherProfile.photoUrl ? (
               <Image
                 src={otherProfile.photoUrl}
@@ -171,37 +171,37 @@ export function ChatView({
               <div className="w-full h-full flex items-center justify-center text-sm">👤</div>
             )}
           </div>
-          <span className="font-semibold truncate">{otherProfile.name}</span>
+          <div>
+            <span className="font-semibold text-sm block truncate">{otherProfile.name}</span>
+            <span className="text-xs text-primary">Tap to view profile</span>
+          </div>
         </Link>
         <div className="relative">
           <button
             onClick={() => setShowMenu((v) => !v)}
-            className="text-muted-foreground hover:text-foreground p-1"
+            className="text-muted-foreground hover:text-foreground p-1 transition-colors"
           >
             <MoreVertical className="w-5 h-5" />
           </button>
           {showMenu && (
             <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowMenu(false)}
-              />
-              <div className="absolute right-0 top-full mt-1 bg-background border border-border rounded-lg shadow-lg z-20 min-w-[160px]">
+              <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+              <div className="absolute right-0 top-full mt-2 bg-background border border-border rounded-2xl shadow-xl z-20 min-w-[160px] overflow-hidden">
                 <button
                   onClick={() => { setShowMenu(false); setShowReport(true) }}
-                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted rounded-t-lg"
+                  className="w-full text-left px-4 py-3 text-sm hover:bg-muted transition-colors"
                 >
                   Report
                 </button>
                 <button
                   onClick={handleBlock}
-                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted"
+                  className="w-full text-left px-4 py-3 text-sm hover:bg-muted transition-colors"
                 >
                   Block
                 </button>
                 <button
                   onClick={handleUnmatch}
-                  className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-muted rounded-b-lg"
+                  className="w-full text-left px-4 py-3 text-sm text-destructive hover:bg-muted transition-colors"
                 >
                   Unmatch
                 </button>
@@ -212,38 +212,56 @@ export function ChatView({
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+      <div className="flex-1 overflow-y-auto px-4 py-4">
         {messages.length === 0 && (
-          <div className="text-center text-muted-foreground text-sm py-8">
-            You matched! Say hello 👋
-          </div>
+          <motion.div
+            className="text-center text-muted-foreground text-sm py-10"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <span className="text-3xl block mb-2">👋</span>
+            Say hello to {otherProfile.name}!
+          </motion.div>
         )}
-        {messages.map((msg) => {
-          const isMe = msg.sender_id === myProfileId
-          return (
-            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${
-                  isMe
-                    ? 'bg-foreground text-background rounded-br-sm'
-                    : 'bg-muted text-foreground rounded-bl-sm'
-                }`}
+        <AnimatePresence initial={false}>
+          {messages.map((msg) => {
+            const isMe = msg.sender_id === myProfileId
+            return (
+              <motion.div
+                key={msg.id}
+                className={`flex mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}
+                initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               >
-                {msg.content}
-              </div>
-            </div>
-          )
-        })}
+                <div
+                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    isMe
+                      ? 'bg-primary text-primary-foreground rounded-br-sm'
+                      : 'bg-muted text-foreground rounded-bl-sm'
+                  }`}
+                >
+                  {msg.content}
+                </div>
+              </motion.div>
+            )
+          })}
+        </AnimatePresence>
         {otherTyping && (
-          <div className="flex justify-start">
+          <motion.div
+            className="flex justify-start mb-2"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+          >
             <div className="bg-muted rounded-2xl rounded-bl-sm px-4 py-3">
-              <div className="flex gap-1 items-center h-3">
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:300ms]" />
+              <div className="flex gap-1 items-center h-4">
+                <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:0ms]" />
+                <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:150ms]" />
+                <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:300ms]" />
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
         <div ref={bottomRef} />
       </div>
@@ -257,10 +275,10 @@ export function ChatView({
         />
       )}
 
-      {/* Input */}
-      <div className="shrink-0 px-4 py-3 border-t border-border flex gap-2 items-end pb-safe">
+      {/* Input bar */}
+      <div className="shrink-0 px-4 py-3 border-t border-border flex gap-2 items-end pb-safe bg-background">
         <textarea
-          className="flex-1 resize-none rounded-2xl border border-border bg-muted px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring max-h-32"
+          className="flex-1 resize-none rounded-2xl border border-border bg-muted/50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 max-h-32 transition-colors placeholder:text-muted-foreground"
           placeholder={`Message ${otherProfile.name}…`}
           rows={1}
           value={input}
@@ -277,14 +295,16 @@ export function ChatView({
             }
           }}
         />
-        <Button
-          size="icon"
-          className="rounded-full w-10 h-10 shrink-0"
-          onClick={sendMessage}
-          disabled={!input.trim() || sending}
-        >
-          <Send className="w-4 h-4" />
-        </Button>
+        <motion.div whileTap={{ scale: 0.88 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }}>
+          <Button
+            size="icon"
+            className="rounded-full w-10 h-10 shrink-0 bg-primary hover:bg-primary/90 shadow-md"
+            onClick={sendMessage}
+            disabled={!input.trim() || sending}
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </motion.div>
       </div>
     </div>
   )

@@ -7,6 +7,9 @@ export default {
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+  		},
   		screens: {
   			xs: '375px'
   		},

@@ -32,9 +32,9 @@ const SWIPE_THRESHOLD = 100
 
 export function SwipeCard({ profile, onSwipe, isTop, onTap }: SwipeCardProps) {
   const x = useMotionValue(0)
-  const rotate = useTransform(x, [-200, 200], [-18, 18])
-  const likeOpacity = useTransform(x, [20, SWIPE_THRESHOLD], [0, 1])
-  const passOpacity = useTransform(x, [-SWIPE_THRESHOLD, -20], [1, 0])
+  const rotate = useTransform(x, [-300, 300], [-22, 22])
+  const likeOpacity = useTransform(x, [30, SWIPE_THRESHOLD], [0, 1])
+  const passOpacity = useTransform(x, [-SWIPE_THRESHOLD, -30], [1, 0])
 
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.x > SWIPE_THRESHOLD || info.velocity.x > 500) {
@@ -52,12 +52,12 @@ export function SwipeCard({ profile, onSwipe, isTop, onTap }: SwipeCardProps) {
       style={{ x, rotate }}
       drag={isTop ? 'x' : false}
       dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.9}
+      dragElastic={0.8}
       onDragEnd={handleDragEnd}
       onTap={isTop ? onTap : undefined}
-      whileDrag={{ scale: 1.02 }}
+      whileDrag={{ scale: 1.03, cursor: 'grabbing' }}
     >
-      <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-xl bg-muted">
+      <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl bg-muted">
         {photoUrl ? (
           <Image
             src={photoUrl}
@@ -68,46 +68,53 @@ export function SwipeCard({ profile, onSwipe, isTop, onTap }: SwipeCardProps) {
             priority={isTop}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted-foreground/20">
-            <span className="text-6xl">👤</span>
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-rose-100 to-pink-50">
+            <span className="text-7xl">👤</span>
           </div>
         )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+        {/* Multi-stop gradient for better readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-40% to-transparent" />
 
         {/* LIKE badge */}
         <motion.div
-          className="absolute top-10 left-6 border-4 border-green-400 rounded-xl px-4 py-2 rotate-[-15deg]"
-          style={{ opacity: likeOpacity }}
+          className="absolute top-12 left-5 backdrop-blur-sm border-[3px] border-emerald-400 rounded-2xl px-4 py-1.5"
+          style={{ opacity: likeOpacity, rotate: -14 }}
         >
-          <span className="text-green-400 font-black text-3xl tracking-wider">LIKE</span>
+          <span className="text-emerald-400 font-black text-2xl tracking-widest">LIKE</span>
         </motion.div>
 
-        {/* PASS badge */}
+        {/* NOPE badge */}
         <motion.div
-          className="absolute top-10 right-6 border-4 border-red-400 rounded-xl px-4 py-2 rotate-[15deg]"
-          style={{ opacity: passOpacity }}
+          className="absolute top-12 right-5 backdrop-blur-sm border-[3px] border-rose-400 rounded-2xl px-4 py-1.5"
+          style={{ opacity: passOpacity, rotate: 14 }}
         >
-          <span className="text-red-400 font-black text-3xl tracking-wider">PASS</span>
+          <span className="text-rose-400 font-black text-2xl tracking-widest">NOPE</span>
         </motion.div>
 
         {/* Profile info */}
-        <div className="absolute bottom-0 inset-x-0 p-6 text-white">
-          <div className="flex items-end justify-between">
+        <div className="absolute bottom-0 inset-x-0 p-5 text-white">
+          <div className="flex items-end justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold">
-                {profile.name}, {calcAge(profile.birthdate)}
-              </h2>
+              <div className="flex items-baseline gap-2 mb-1">
+                <h2 className="text-3xl font-bold leading-none tracking-tight">
+                  {profile.name}
+                </h2>
+                <span className="text-2xl font-light text-white/90 leading-none">
+                  {calcAge(profile.birthdate)}
+                </span>
+              </div>
               {profile.bio && (
-                <p className="mt-1 text-sm text-white/80 line-clamp-2">{profile.bio}</p>
+                <p className="text-sm text-white/70 line-clamp-2 leading-snug">
+                  {profile.bio}
+                </p>
               )}
             </div>
             {isTop && onTap && (
               <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); onTap() }}
-                className="shrink-0 ml-3 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+                className="shrink-0 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center hover:bg-white/30 transition-colors"
               >
                 <ChevronRight className="w-5 h-5 text-white" />
               </button>
