@@ -1,0 +1,10 @@
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import type { Database } from './types'
+
+// Service role client — bypasses RLS for admin operations
+// NEVER expose this to the client side
+export const createServiceClient = () =>
+  createSupabaseClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
