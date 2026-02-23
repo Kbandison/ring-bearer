@@ -18,7 +18,9 @@
   },
   "packageManager": "npm@11.10.1",
   "workspaces": [
-    "apps/*",
+    "apps/web",
+    "apps/admin",
+    "apps/landing",
     "packages/*"
   ],
   "dependencies": {
