@@ -36,3 +36,9 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Expo / React Native
+apps/mobile/.expo/
+*.aab
+*.apk
+google-service-account.json

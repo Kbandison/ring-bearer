@@ -266,7 +266,7 @@ export function ProfileView({
         {isOwnProfile ? (
           <Button
             className="w-full h-12 rounded-full gap-2"
-            onClick={() => router.push('/settings')}
+            onClick={() => router.push('/profile/me')}
           >
             Edit Profile
           </Button>
