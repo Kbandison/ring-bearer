@@ -38,7 +38,7 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="profile/index"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
@@ -51,8 +51,9 @@ export default function AppLayout() {
           tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
         }}
       />
-      {/* Hide chat from tab bar */}
-      <Tabs.Screen name="chat" options={{ href: null }} />
+      {/* Hide nested routes from tab bar */}
+      <Tabs.Screen name="profile/[id]" options={{ href: null }} />
+      <Tabs.Screen name="chat/[id]" options={{ href: null }} />
     </Tabs>
   )
 }
