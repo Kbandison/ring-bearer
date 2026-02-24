@@ -46,7 +46,7 @@ module.exports = {
     plugins: [
       'expo-router',
       'expo-secure-store',
-      ['expo-av', { microphonePermission: 'Ring Bearer needs mic access for voice intros.' }],
+      ['expo-audio', { microphonePermission: 'Ring Bearer needs mic access for voice intros.' }],
       [
         'expo-image-picker',
         {

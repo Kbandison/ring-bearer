@@ -6,7 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ArrowLeft, Play, Pause, Heart, X, MessageCircle, MapPin } from 'lucide-react-native'
-import { Audio } from 'expo-av'
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio'
 import { supabase } from '@/lib/supabase'
 
 const { width } = Dimensions.get('window')
@@ -33,15 +33,15 @@ export default function ProfileScreen() {
   const [photos, setPhotos] = useState<{ url: string }[]>([])
   const [voiceIntroUrl, setVoiceIntroUrl] = useState<string | null>(null)
   const [currentPhoto, setCurrentPhoto] = useState(0)
-  const [sound, setSound] = useState<Audio.Sound | null>(null)
-  const [playing, setPlaying] = useState(false)
   const [existingSwipe, setExistingSwipe] = useState<'like' | 'pass' | null>(null)
   const [matchId, setMatchId] = useState<string | null>(null)
   const [conversationId, setConversationId] = useState<string | null>(null)
 
+  const player = useAudioPlayer(voiceIntroUrl ?? undefined)
+  const playerStatus = useAudioPlayerStatus(player)
+
   useEffect(() => {
     loadProfile()
-    return () => { sound?.unloadAsync() }
   }, [profileId])
 
   const loadProfile = async () => {
@@ -96,19 +96,12 @@ export default function ProfileScreen() {
     setLoading(false)
   }
 
-  const toggleAudio = async () => {
+  const toggleAudio = () => {
     if (!voiceIntroUrl) return
-    if (sound) {
-      if (playing) { await sound.pauseAsync(); setPlaying(false) }
-      else { await sound.playAsync(); setPlaying(true) }
+    if (playerStatus.playing) {
+      player.pause()
     } else {
-      const { sound: newSound } = await Audio.Sound.createAsync({ uri: voiceIntroUrl })
-      setSound(newSound)
-      await newSound.playAsync()
-      setPlaying(true)
-      newSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) setPlaying(false)
-      })
+      player.play()
     }
   }
 
@@ -183,7 +176,7 @@ export default function ProfileScreen() {
               className="flex-row items-center gap-3 bg-gray-100 rounded-2xl px-4 py-3"
             >
               <View className="w-10 h-10 rounded-full bg-rose-500 items-center justify-center">
-                {playing ? <Pause size={16} color="white" /> : <Play size={16} color="white" />}
+                {playerStatus.playing ? <Pause size={16} color="white" /> : <Play size={16} color="white" />}
               </View>
               <Text className="text-sm font-medium text-gray-900">Voice intro</Text>
             </Pressable>
