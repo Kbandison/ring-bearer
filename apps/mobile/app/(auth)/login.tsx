@@ -9,10 +9,11 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native'
-import { Link } from 'expo-router'
+import { Link, useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 
 export default function LoginScreen() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,8 +25,11 @@ export default function LoginScreen() {
     setError(null)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
-    if (error) setError(error.message)
-    // Successful login → AuthGuard in _layout redirects automatically
+    if (error) {
+      setError(error.message)
+    } else {
+      router.replace('/(app)/discover')
+    }
   }
 
   return (
