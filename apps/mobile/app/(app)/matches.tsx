@@ -51,8 +51,8 @@ export default function MatchesScreen() {
 
     const { data: matchRows } = await supabase
       .from('matches')
-      .select('id, profile1_id, profile2_id, created_at')
-      .or(`profile1_id.eq.${profile.id},profile2_id.eq.${profile.id}`)
+      .select('id, profile_a_id, profile_b_id, created_at')
+      .or(`profile_a_id.eq.${profile.id},profile_b_id.eq.${profile.id}`)
       .is('unmatched_at', null)
       .order('created_at', { ascending: false })
 
@@ -64,7 +64,7 @@ export default function MatchesScreen() {
     }
 
     const otherIds = matchRows.map((m) =>
-      m.profile1_id === profile.id ? m.profile2_id : m.profile1_id
+      m.profile_a_id === profile.id ? m.profile_b_id : m.profile_a_id
     )
 
     const [profilesRes, photosRes, convsRes] = await Promise.all([
@@ -88,7 +88,7 @@ export default function MatchesScreen() {
     const convMap = Object.fromEntries((convsRes.data ?? []).map((c) => [c.match_id, c]))
 
     const previews: MatchPreview[] = matchRows.map((m) => {
-      const otherId = m.profile1_id === profile.id ? m.profile2_id : m.profile1_id
+      const otherId = m.profile_a_id === profile.id ? m.profile_b_id : m.profile_a_id
       const conv = convMap[m.id]
       return {
         matchId: m.id,

@@ -5,7 +5,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ArrowLeft, Play, Pause, Heart, X, MessageCircle, MapPin } from 'lucide-react-native'
+import { ArrowLeft, Play, Pause, Heart, X, MessageCircle, MapPin, Flag, Ban } from 'lucide-react-native'
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio'
 import { supabase } from '@/lib/supabase'
 
@@ -105,6 +105,49 @@ export default function ProfileScreen() {
     }
   }
 
+  const handleReportBlock = () => {
+    if (!myProfileId || !profile) return
+    Alert.alert(profile.name, 'What would you like to do?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Report',
+        onPress: () => Alert.alert('Report', 'Select a reason', [
+          { text: 'Spam', onPress: () => submitReport('spam') },
+          { text: 'Inappropriate content', onPress: () => submitReport('inappropriate') },
+          { text: 'Fake profile', onPress: () => submitReport('fake') },
+          { text: 'Cancel', style: 'cancel' },
+        ]),
+      },
+      {
+        text: 'Block',
+        style: 'destructive',
+        onPress: () => Alert.alert('Block', `Block ${profile.name}?`, [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Block', style: 'destructive', onPress: submitBlock },
+        ]),
+      },
+    ])
+  }
+
+  const submitReport = async (reason: string) => {
+    if (!myProfileId || !profile) return
+    await supabase.from('reports').insert({
+      reporter_id: myProfileId,
+      reported_id: profile.id,
+      reason,
+    })
+    Alert.alert('Reported', 'Thank you. We\'ll review this report.')
+  }
+
+  const submitBlock = async () => {
+    if (!myProfileId || !profile) return
+    await supabase.from('blocks').insert({
+      blocker_id: myProfileId,
+      blocked_id: profile.id,
+    })
+    router.back()
+  }
+
   const handleSwipe = async (direction: 'like' | 'pass') => {
     if (!myProfileId || !profile) return
     await supabase.from('swipes').upsert({
@@ -137,7 +180,7 @@ export default function ProfileScreen() {
             </View>
           )}
           <View className="absolute inset-0 bg-black/5" />
-          {/* Back */}
+          {/* Back + report/block */}
           <SafeAreaView edges={['top']} className="absolute top-0 left-0 right-0 flex-row justify-between px-4 py-2">
             <Pressable
               onPress={() => router.back()}
@@ -145,6 +188,14 @@ export default function ProfileScreen() {
             >
               <ArrowLeft size={20} color="white" />
             </Pressable>
+            {!isOwnProfile && (
+              <Pressable
+                onPress={handleReportBlock}
+                className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
+              >
+                <Flag size={16} color="white" />
+              </Pressable>
+            )}
           </SafeAreaView>
           {/* Photo dots */}
           {photos.length > 1 && (

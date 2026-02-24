@@ -49,7 +49,7 @@ export default function DiscoverScreen() {
     let query = supabase
       .from('profiles')
       .select('id, name, birthdate, bio')
-      .eq('profile_complete', true)
+      .eq('profile_completed', true)
       .eq('is_active', true)
       .eq('is_banned', false)
       .order('last_active_at', { ascending: false })

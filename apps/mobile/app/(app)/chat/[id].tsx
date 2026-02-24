@@ -67,10 +67,10 @@ export default function ChatScreen() {
     setMatchId(conv.match_id)
 
     const { data: match } = await supabase
-      .from('matches').select('profile1_id, profile2_id').eq('id', conv.match_id).single()
+      .from('matches').select('profile_a_id, profile_b_id').eq('id', conv.match_id).single()
     if (!match) return
 
-    const otherId = match.profile1_id === me.id ? match.profile2_id : match.profile1_id
+    const otherId = match.profile_a_id === me.id ? match.profile_b_id : match.profile_a_id
     const { data: otherProf } = await supabase
       .from('profiles').select('id, name').eq('id', otherId).single()
     const { data: photo } = await supabase

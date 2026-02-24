@@ -17,12 +17,24 @@ function AuthGuard({ session }: { session: Session | null | undefined }) {
     if (session === undefined) return // still loading
 
     const inAuthGroup = (segments[0] as string) === '(auth)'
-    const inApp = (segments[0] as string) === '(app)'
+    const inOnboarding = (segments[0] as string) === '(onboarding)'
 
     if (!session && !inAuthGroup) {
       router.replace('/(auth)/login')
     } else if (session && inAuthGroup) {
-      router.replace('/(app)/discover')
+      // Check if onboarding is complete
+      supabase
+        .from('profiles')
+        .select('profile_completed')
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.profile_completed) {
+            router.replace('/(app)/discover')
+          } else {
+            router.replace('/(onboarding)/step1')
+          }
+        })
     }
   }, [session, segments, router])
 
@@ -50,6 +62,7 @@ export default function RootLayout() {
         <AuthGuard session={session} />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(onboarding)" />
           <Stack.Screen name="(app)" />
         </Stack>
         <StatusBar style="auto" />

@@ -7,9 +7,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { Heart, X, Lock, RefreshCcw } from 'lucide-react-native'
+import Constants from 'expo-constants'
 import { SwipeCard, type DiscoverProfile } from './SwipeCard'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'expo-router'
+
+const SUPABASE_URL = (Constants.expoConfig?.extra?.supabaseUrl as string) ?? ''
 
 interface SwipeDeckProps {
   profiles: DiscoverProfile[]
@@ -38,7 +41,7 @@ export function SwipeDeck({ profiles: initialProfiles }: SwipeDeckProps) {
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/swipe`, {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/swipe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
